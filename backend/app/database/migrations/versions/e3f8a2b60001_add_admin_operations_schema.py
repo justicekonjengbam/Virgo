@@ -37,7 +37,7 @@ def upgrade() -> None:
     support_columns = {column['name'] for column in inspector.get_columns('support_tickets')}
     with op.batch_alter_table('support_tickets') as batch_op:
         if 'assigned_admin_id' not in support_columns:
-            batch_op.add_column(sa.Column('assigned_admin_id', sa.Integer(), sa.ForeignKey('admin_users.id', ondelete='SET NULL')))
+            batch_op.add_column(sa.Column('assigned_admin_id', sa.Integer(), sa.ForeignKey('admin_users.id', ondelete='SET NULL', name='fk_support_tickets_admin_id')))
         if 'resolution_note' not in support_columns:
             batch_op.add_column(sa.Column('resolution_note', sa.Text()))
         if 'resolved_at' not in support_columns:
