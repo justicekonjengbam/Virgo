@@ -19,3 +19,4 @@ services:
         value: local
       - key: LOCAL_STORAGE_DIR
         value: /tmp/documents
+
