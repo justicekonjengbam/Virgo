@@ -17,5 +17,7 @@ timeout /t 3 /nobreak >nul
 echo.
 echo Connecting to Cloudflare Public Tunnel...
 echo Look for your live link (https://...trycloudflare.com) below:
+echo   - Web Admin Panel:  [your live link]/admin  (or http://127.0.0.1:8000/admin)
+echo   - Login: admin@virgo.com / admin12345
 echo =======================================================
 dev-tools\cloudflared.exe tunnel --url http://127.0.0.1:8000

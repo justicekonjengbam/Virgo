@@ -50,7 +50,11 @@ class AdminAuthService:
     def bootstrap(self, db: Session) -> None:
         email, password = self.settings.admin_bootstrap_email, self.settings.admin_bootstrap_password
         if not email or not password:
-            return
+            if self.settings.environment == 'development':
+                email = 'admin@virgo.com'
+                password = 'admin12345'
+            else:
+                return
         normalized = email.strip().lower()
         existing = db.scalar(select(AdminUser).where(AdminUser.email == normalized))
         if existing:
