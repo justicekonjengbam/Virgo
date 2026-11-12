@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 
 from app.api.dependencies.auth import get_current_passenger
 from app.models.user import Passenger
@@ -10,8 +10,16 @@ service = MapProviderService()
 
 
 @router.get('/config', response_model=MapConfigResponse)
-def map_config() -> MapConfigResponse:
-    return service.config()
+def map_config(request: Request) -> MapConfigResponse:
+    proto = request.headers.get('x-forwarded-proto', request.url.scheme)
+    host = request.headers.get('x-forwarded-host') or request.headers.get('host')
+    base_url = f'{proto}://{host}' if host else str(request.base_url)
+    return service.config(base_url=base_url)
+
+
+@router.get('/style.json')
+def map_style() -> dict:
+    return service.get_raster_style()
 
 
 @router.get('/places', response_model=list[GeocodedPlaceResponse])

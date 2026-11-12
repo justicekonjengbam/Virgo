@@ -43,7 +43,37 @@ class MapProviderService:
     def bounds(self) -> list[float]:
         return get_settings().service_bounds
 
-    def config(self) -> MapConfigResponse:
+    @staticmethod
+    def get_raster_style() -> dict:
+        return {
+            'version': 8,
+            'name': 'Carto Voyager Raster',
+            'sources': {
+                'carto-voyager': {
+                    'type': 'raster',
+                    'tiles': [
+                        'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                        'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                        'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                        'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                    ],
+                    'tileSize': 256,
+                    'attribution': '© OpenStreetMap contributors, © CARTO',
+                    'maxzoom': 20,
+                }
+            },
+            'layers': [
+                {
+                    'id': 'carto-voyager-layer',
+                    'type': 'raster',
+                    'source': 'carto-voyager',
+                    'minzoom': 0,
+                    'maxzoom': 20,
+                }
+            ],
+        }
+
+    def config(self, base_url: str | None = None) -> MapConfigResponse:
         key = get_settings().geoapify_api_key
         if key:
             return MapConfigResponse(
@@ -55,10 +85,11 @@ class MapProviderService:
                 offline_mode=False,
             )
         if get_settings().environment == 'development':
-            logger.info('DEV_OFFLINE_MAP: GEOAPIFY_API_KEY is missing. Using offline MapLibre fallback demo style.')
+            logger.info('DEV_OFFLINE_MAP: GEOAPIFY_API_KEY is missing. Using OpenStreetMap/Carto Voyager raster fallback.')
+            style_endpoint = f"{base_url.rstrip('/')}/api/v1/maps/style.json" if base_url else '/api/v1/maps/style.json'
             return MapConfigResponse(
-                style_url='https://demotiles.maplibre.org/style.json',
-                attribution='© OpenStreetMap contributors · Virgo Offline Fallback',
+                style_url=style_endpoint,
+                attribution='© OpenStreetMap contributors · CARTO',
                 service_area=self.bounds,
                 service_center=[self.center_longitude, self.center_latitude],
                 service_radius_km=self.service_radius_km,

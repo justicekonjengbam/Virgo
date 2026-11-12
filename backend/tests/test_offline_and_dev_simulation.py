@@ -31,7 +31,7 @@ def test_map_provider_offline_fallback_in_development():
         # Config
         config = service.config()
         assert config.offline_mode is True
-        assert 'demotiles.maplibre.org' in config.style_url
+        assert 'style.json' in config.style_url
 
         # Search
         results = service.search('Kangla')
