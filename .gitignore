@@ -18,6 +18,7 @@ backend/secrets/
 *.log
 *.db
 *.sqlite
+*.exe
 *.egg-info/
 *.keystore
 *.jks
