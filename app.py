@@ -21,25 +21,21 @@ import app.main
 # Create the FastAPI application
 fastapi_app = app.main.create_app()
 
-try:
-    import gradio as gr
+import gradio as gr
 
-    with gr.Blocks(title="VIRGO CabApp Backend") as demo:
-        gr.Markdown("""
-        # 🚕 VIRGO CabApp Backend is Live!
-        
-        The backend API is running and ready to handle ride bookings, driver dispatch, and user authentication.
-        
-        * **Status:** Online
-        * **Health Check:** `/health`
-        * **API Docs:** `/docs`
-        """)
+with gr.Blocks(title="VIRGO CabApp Backend") as demo:
+    gr.Markdown("""
+    # 🚕 VIRGO CabApp Backend is Live!
+    
+    The backend API is running and ready to handle ride bookings, driver dispatch, and user authentication.
+    
+    * **Status:** Online
+    * **Health Check:** `/health`
+    * **API Docs:** `/docs`
+    """)
 
-    # Mount Gradio onto the FastAPI app so both UI and API endpoints work seamlessly
-    app = gr.mount_gradio_app(fastapi_app, demo, path="/")
-except ImportError:
-    app = fastapi_app
+# Include all FastAPI routes into Gradio's internal FastAPI app
+demo.app.include_router(fastapi_app.router)
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=7860)
+    demo.launch()
