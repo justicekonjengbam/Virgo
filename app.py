@@ -25,10 +25,12 @@ current_app_mod = sys.modules.get("app")
 if current_app_mod and not hasattr(current_app_mod, "__path__"):
     del sys.modules["app"]
 
-import app.main
+from app.main import create_app
+from app.api.v1.router import api_router
+from app.api.v1.routes.health import router as health_router
 
-# Create the FastAPI application
-fastapi_app = app.main.create_app()
+# Initialize backend database and services
+fastapi_app = create_app()
 
 import gradio as gr
 
@@ -43,8 +45,9 @@ with gr.Blocks(title="VIRGO CabApp Backend") as demo:
     * **API Docs:** `/docs`
     """)
 
-# Include all FastAPI routes into Gradio's internal FastAPI app
-demo.app.include_router(fastapi_app.router)
+# Include all 76 backend API routes directly into Gradio's web application
+demo.app.include_router(health_router)
+demo.app.include_router(api_router, prefix="/api/v1")
 
 if __name__ == "__main__":
     demo.launch()
