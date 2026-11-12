@@ -49,8 +49,8 @@ export const authService = {
   async requestOtp(phoneNumber: string, intent: PhoneAuthIntent): Promise<OtpRequestResult> {
     const canonicalPhone = cleanDigits(phoneNumber);
 
-    // In development mode, use the backend direct OTP flow
-    if (__DEV__) {
+    // Use the backend direct OTP flow (no SMS billing required)
+    if (true) {
       if (intent === 'login') {
         // Preflight verifies that an active, verified account exists before sending OTP
         await apiClient.post('/api/v1/auth/passengers/firebase/login/preflight', {

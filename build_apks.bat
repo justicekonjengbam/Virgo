@@ -8,24 +8,18 @@ echo.
 
 if not exist "dist\apks" mkdir "dist\apks"
 
-if exist "dist\apks\VIRGO-Passenger.apk" (
-    echo [1/2] VIRGO Passenger APK already built! (Skipping passenger build)
-    echo       Location: dist\apks\VIRGO-Passenger.apk
-    echo.
-) else (
-    echo [1/2] Building VIRGO Passenger App Release APK...
-    cd passenger-app\android
-    call gradlew.bat assembleRelease
-    if %ERRORLEVEL% neq 0 (
-        echo [!] Passenger App build failed.
-        pause
-        exit /b %ERRORLEVEL%
-    )
-    cd /d "%~dp0"
-    copy /y "passenger-app\android\app\build\outputs\apk\release\app-release.apk" "dist\apks\VIRGO-Passenger.apk"
-    echo -> VIRGO Passenger APK ready at dist\apks\VIRGO-Passenger.apk
-    echo.
+echo [1/2] Building VIRGO Passenger App Release APK...
+cd passenger-app\android
+call gradlew.bat assembleRelease
+if %ERRORLEVEL% neq 0 (
+    echo [!] Passenger App build failed.
+    pause
+    exit /b %ERRORLEVEL%
 )
+cd /d "%~dp0"
+copy /y "passenger-app\android\app\build\outputs\apk\release\app-release.apk" "dist\apks\VIRGO-Passenger.apk"
+echo -> VIRGO Passenger APK ready at dist\apks\VIRGO-Passenger.apk
+echo.
 
 echo [2/2] Building VIRGO Driver App Release APK...
 cd driver-app\android

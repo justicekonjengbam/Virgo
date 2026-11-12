@@ -116,8 +116,8 @@ export const driverAuthService = {
   async requestOtp(phoneNumber: string, intent: DriverAuthIntent = 'login'): Promise<DriverOtpRequestResult> {
     const canonicalPhone = cleanDigits(phoneNumber);
 
-    // In development mode, bypass Firebase SMS and use backend development OTP flow
-    if (__DEV__) {
+    // Bypass Firebase SMS and use backend direct OTP flow (no SMS billing required)
+    if (true) {
       if (intent === 'login') {
         // Preflight verifies that an active Driver account exists before sending OTP
         await apiClient.post('/api/v1/auth/drivers/firebase/login/preflight', {
