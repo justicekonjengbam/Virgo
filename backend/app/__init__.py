@@ -1,0 +1,1 @@
+"""CabApp FastAPI application package."""

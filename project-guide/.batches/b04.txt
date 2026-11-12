@@ -1,0 +1,10 @@
+backend/app/database/migrations/versions/b7d9d0e0f001_add_driver_document_number.py
+backend/app/database/migrations/versions/c1d6e1b40001_add_driver_online_status.py
+backend/app/database/migrations/versions/d2f7e1a50001_add_driver_document_review_metadata.py
+backend/app/database/migrations/versions/e3f8a2b60001_add_admin_operations_schema.py
+backend/app/database/migrations/versions/e4ffba93f4c4_initial_ride_hailing_schema.py
+backend/app/database/migrations/versions/f4a9c3d70001_add_ride_dispatch_offers.py
+backend/app/database/migrations/versions/g5b0d4e80001_add_live_ride_tracking.py
+backend/app/database/migrations/versions/h6c1e5f90001_harden_admin_accounts.py
+backend/app/database/migrations/versions/i7d2f6a00001_add_outstation_bookings.py
+backend/app/database/migrations/versions/j8e3a7b10001_add_outstation_route.py

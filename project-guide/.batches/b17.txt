@@ -1,0 +1,10 @@
+passenger-app/src/types/assets.d.ts
+passenger-app/src/types/react-native-config.d.ts
+passenger-app/src/types/react-native-vector-icons.d.ts
+driver-app/src/components/DriverButton.tsx
+driver-app/src/components/DriverCard.tsx
+driver-app/src/components/DriverPageHeader.tsx
+driver-app/src/components/DriverText.tsx
+driver-app/src/components/DriverTextField.tsx
+driver-app/src/components/auth/DriverAuthHeader.tsx
+driver-app/src/components/brand/DriverBrandLogo.tsx

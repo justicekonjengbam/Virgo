@@ -1,0 +1,14 @@
+{
+  "name": "cabapp",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "lint": "pnpm --filter passenger-app lint && pnpm --filter driver-app lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm --filter passenger-app test && pnpm --filter driver-app test"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.2"
+  }
+}

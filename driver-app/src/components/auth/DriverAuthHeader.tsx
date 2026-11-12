@@ -1,0 +1,9 @@
+import { Pressable, StyleSheet, View } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { DriverBrandMark } from '../brand/DriverBrandMark';
+import { DriverText } from '../DriverText';
+import { colors, radius, shadows, spacing } from '../../theme';
+
+type DriverAuthHeaderProps = { onBack: () => void; onHelp: () => void; onLogin?: () => void };
+export function DriverAuthHeader({ onBack, onHelp, onLogin }: DriverAuthHeaderProps) { return <View style={styles.header}><Pressable accessibilityLabel="Go back" onPress={onBack} style={styles.iconButton}><MaterialCommunityIcons color={colors.primary} name="chevron-left" size={30}/></Pressable><DriverBrandMark size={54}/><View style={styles.actions}>{onLogin ? <Pressable accessibilityRole="button" onPress={onLogin} style={styles.loginButton}><DriverText color={colors.primary} weight="500">Login</DriverText></Pressable> : null}<Pressable accessibilityLabel="Get help" onPress={onHelp} style={styles.iconButton}><MaterialCommunityIcons color={colors.primary} name="help-circle" size={27}/></Pressable></View></View>; }
+const styles = StyleSheet.create({ header: { alignItems: 'center', borderBottomColor: colors.primary, borderBottomWidth: 1, flexDirection: 'row', height: 108, justifyContent: 'space-between', paddingHorizontal: spacing.xl }, actions: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm }, iconButton: { ...shadows.card, alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.primary, borderRadius: radius.md, borderWidth: 1, height: 48, justifyContent: 'center', width: 48 }, loginButton: { alignItems: 'center', borderColor: colors.primary, borderRadius: radius.sm, borderWidth: 1, height: 48, justifyContent: 'center', minWidth: 88, paddingHorizontal: spacing.md } });

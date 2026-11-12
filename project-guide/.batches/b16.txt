@@ -1,0 +1,10 @@
+passenger-app/src/features/rides/screens/MyRidesScreen.tsx
+passenger-app/src/features/splash/screens/SplashScreen.tsx
+passenger-app/src/features/support/screens/FaqScreen.tsx
+passenger-app/src/features/support/screens/InstantRideScreen.tsx
+passenger-app/src/features/support/screens/PassengerSupportScreen.tsx
+passenger-app/src/navigation/PassengerNavigator.tsx
+passenger-app/src/navigation/types.ts
+passenger-app/src/services/apiClient.ts
+passenger-app/src/theme/index.ts
+passenger-app/src/theme/tokens.ts

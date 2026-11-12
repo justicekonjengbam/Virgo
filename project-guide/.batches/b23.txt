@@ -1,0 +1,10 @@
+driver-app/android/app/src/main/res/values/styles.xml
+driver-app/android/build.gradle
+driver-app/android/settings.gradle
+driver-app/app.json
+driver-app/babel.config.js
+driver-app/eslint.config.mjs
+driver-app/index.js
+driver-app/ios/.xcode.env
+driver-app/ios/DriverApp/AppDelegate.swift
+driver-app/jest.config.js

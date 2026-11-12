@@ -1,0 +1,10 @@
+docs/authentication-api.md
+docs/database-guidelines.md
+docs/driver-app-foundation.md
+driver-app/.env.example
+driver-app/App.tsx
+driver-app/android/app/build.gradle
+driver-app/android/app/src/main/AndroidManifest.xml
+driver-app/android/app/src/main/java/com/driverapp/MainActivity.kt
+driver-app/android/app/src/main/java/com/driverapp/MainApplication.kt
+driver-app/android/app/src/main/res/values/strings.xml

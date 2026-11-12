@@ -1,0 +1,10 @@
+driver-app/src/components/brand/DriverBrandMark.tsx
+driver-app/src/config/environment.ts
+driver-app/src/features/auth/components/DriverPhoneAuthForm.tsx
+driver-app/src/features/auth/components/DriverVehicleVerificationForm.tsx
+driver-app/src/features/auth/screens/DriverLoginScreen.tsx
+driver-app/src/features/auth/screens/DriverOnboardingScreen.tsx
+driver-app/src/features/auth/screens/DriverSignupScreen.tsx
+driver-app/src/features/auth/services/driverAuthService.ts
+driver-app/src/features/auth/utils/driverAuthError.ts
+driver-app/src/features/dashboard/components/DriverDrawer.tsx

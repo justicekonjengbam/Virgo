@@ -1,0 +1,10 @@
+driver-app/src/features/profile/screens/DriverSettingsScreen.tsx
+driver-app/src/features/profile/services/driverProfileService.ts
+driver-app/src/features/rides/screens/DriverActiveRideScreen.tsx
+driver-app/src/features/rides/screens/DriverOutstationScreen.tsx
+driver-app/src/features/rides/screens/DriverTripHistoryScreen.tsx
+driver-app/src/features/rides/screens/RideRequestScreen.tsx
+driver-app/src/features/rides/services/driverRealtimeService.ts
+driver-app/src/features/rides/services/rideMatchingService.ts
+driver-app/src/features/splash/screens/DriverSplashScreen.tsx
+driver-app/src/features/support/screens/DriverHelpScreen.tsx

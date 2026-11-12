@@ -1,0 +1,10 @@
+passenger-app/src/features/auth/screens/LoginScreen.tsx
+passenger-app/src/features/auth/screens/SignupScreen.tsx
+passenger-app/src/features/auth/services/authService.ts
+passenger-app/src/features/auth/utils/authErrorMessage.ts
+passenger-app/src/features/auth/validation/authValidation.ts
+passenger-app/src/features/booking/data/bookingApi.ts
+passenger-app/src/features/booking/screens/BookingStatusScreen.tsx
+passenger-app/src/features/booking/screens/FareEstimateScreen.tsx
+passenger-app/src/features/booking/screens/LocationSelectionScreen.tsx
+passenger-app/src/features/booking/services/passengerRealtimeService.ts

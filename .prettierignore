@@ -1,0 +1,9 @@
+node_modules
+coverage
+dist
+.pnpm-store
+backend/.venv
+passenger-app/android
+passenger-app/ios
+driver-app/android
+driver-app/ios

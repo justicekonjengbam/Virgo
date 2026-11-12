@@ -1,0 +1,10 @@
+passenger-app/android/app/src/main/java/com/passengerapp/MainActivity.kt
+passenger-app/android/app/src/main/java/com/passengerapp/MainApplication.kt
+passenger-app/android/app/src/main/res/values/strings.xml
+passenger-app/android/app/src/main/res/values/styles.xml
+passenger-app/android/build.gradle
+passenger-app/android/settings.gradle
+passenger-app/app.json
+passenger-app/babel.config.js
+passenger-app/eslint.config.mjs
+passenger-app/index.js

@@ -1,0 +1,10 @@
+driver-app/src/features/dashboard/components/DriverHeader.tsx
+driver-app/src/features/dashboard/hooks/useDriverDashboard.ts
+driver-app/src/features/dashboard/screens/DriverHomeScreen.tsx
+driver-app/src/features/dashboard/services/driverDashboardService.ts
+driver-app/src/features/dashboard/services/driverMenuService.ts
+driver-app/src/features/dashboard/state/DriverSessionContext.tsx
+driver-app/src/features/earnings/screens/DriverEarningsScreen.tsx
+driver-app/src/features/maps/components/DriverRideMap.tsx
+driver-app/src/features/maps/hooks/useDriverLocationReporter.ts
+driver-app/src/features/maps/services/driverMapService.ts

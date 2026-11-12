@@ -1,0 +1,8 @@
+passenger-app/ios/.xcode.env
+passenger-app/ios/PassengerApp/AppDelegate.swift
+passenger-app/jest.config.js
+passenger-app/metro.config.js
+passenger-app/package.json
+passenger-app/react-native.config.js
+passenger-app/tsconfig.json
+pnpm-workspace.yaml
