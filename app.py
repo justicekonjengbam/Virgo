@@ -2,6 +2,15 @@ import sys
 from pathlib import Path
 import datetime
 
+# ZeroGPU compatibility for Hugging Face
+try:
+    import spaces
+    @spaces.GPU
+    def hf_gpu_dummy():
+        return True
+except Exception:
+    pass
+
 # Compatibility fix for Python 3.10 environments
 if not hasattr(datetime, "UTC"):
     datetime.UTC = datetime.timezone.utc
