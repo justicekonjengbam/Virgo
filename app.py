@@ -1,5 +1,10 @@
 import sys
 from pathlib import Path
+import datetime
+
+# Compatibility fix for Python 3.10 environments
+if not hasattr(datetime, "UTC"):
+    datetime.UTC = datetime.timezone.utc
 
 # Add backend directory to module search path
 backend_dir = Path(__file__).resolve().parent / "backend"
