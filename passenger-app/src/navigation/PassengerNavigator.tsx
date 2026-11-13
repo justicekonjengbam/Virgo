@@ -48,7 +48,12 @@ function AuthenticatedShell({ activeDestination, children, navigation }: { activ
   return <>{children(() => setMenuVisible(true))}<HomeDrawer activeDestination={activeDestination} onClose={() => setMenuVisible(false)} onLogout={() => void logout()} onNavigate={(destination) => navigateToDestination(navigation, destination)} onSwitchToDriver={switchToDriver} visible={menuVisible} /></>;
 }
 
-function SplashRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Splash'>) { return <SplashScreen onContinue={() => { void authService.hasSession().then(hasSession => navigation.replace(hasSession ? 'Home' : 'Login')); }} />; }
+function SplashRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Splash'>) {
+  useEffect(() => {
+    void authService.hasSession().then(hasSession => navigation.replace(hasSession ? 'Home' : 'Login'));
+  }, [navigation]);
+  return <SplashScreen onContinue={() => { void authService.hasSession().then(hasSession => navigation.replace(hasSession ? 'Home' : 'Login')); }} />;
+}
 function LoginRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Login'>) { return <LoginScreen onAuthenticated={() => resetToHome(navigation)} onBack={() => navigation.navigate('Splash')} onHelp={() => navigation.navigate('Faq')} onSignup={() => navigation.navigate('Signup')} />; }
 function SignupRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Signup'>) { return <SignupScreen onAuthenticated={() => resetToHome(navigation)} onBack={() => navigation.goBack()} onHelp={() => navigation.navigate('Faq')} onLogin={() => navigation.replace('Login')} />; }
 function FaqRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Faq'>) { return <FaqScreen onBack={() => navigation.goBack()} />; }

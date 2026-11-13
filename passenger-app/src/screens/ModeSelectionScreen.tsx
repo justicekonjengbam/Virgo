@@ -14,12 +14,7 @@ export function ModeSelectionScreen() {
       <View style={styles.container}>
         {/* Brand Header */}
         <View style={styles.header}>
-          <BrandMark />
-          <View style={styles.badge}>
-            <DsText color={colors.primary} variant="caption">
-              ALL-IN-ONE VIRGO
-            </DsText>
-          </View>
+          <BrandMark size={70} />
         </View>
 
         {/* Title */}
@@ -101,15 +96,6 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    gap: spacing.sm,
-  },
-  badge: {
-    backgroundColor: colors.primarySoft,
-    borderColor: colors.primary,
-    borderWidth: 1,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
   },
   titleBlock: {
     gap: spacing.sm,

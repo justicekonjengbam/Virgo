@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator, type NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -22,7 +23,29 @@ import type { DriverStackParamList } from './types';
 const Stack = createNativeStackNavigator<DriverStackParamList>();
 
 function SplashRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Splash'>) {
-  return <DriverSplashScreen onContinue={() => navigation.replace('Login')} />;
+  useEffect(() => {
+    void driverAuthService.getSession().then(session => {
+      if (session) {
+        navigation.replace(session.driver.onboarding_completed ? 'Home' : 'Onboarding');
+      } else {
+        navigation.replace('Login');
+      }
+    });
+  }, [navigation]);
+
+  return (
+    <DriverSplashScreen
+      onContinue={() => {
+        void driverAuthService.getSession().then(session => {
+          if (session) {
+            navigation.replace(session.driver.onboarding_completed ? 'Home' : 'Onboarding');
+          } else {
+            navigation.replace('Login');
+          }
+        });
+      }}
+    />
+  );
 }
 
 function LoginRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Login'>) {
