@@ -23,6 +23,7 @@ import { NotificationsScreen } from '../features/notifications/screens/Notificat
 import { SavedAddressesScreen } from '../features/addresses/screens/SavedAddressesScreen';
 import { PassengerSettingsScreen } from '../features/profile/screens/PassengerSettingsScreen';
 import { DsLoading } from '../components/design-system';
+import { useAppMode } from '../context/AppModeContext';
 import type { BookingDraft, PassengerStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<PassengerStackParamList>();
@@ -41,9 +42,10 @@ function navigateToDestination(navigation: NavigationProp<PassengerStackParamLis
 }
 
 function AuthenticatedShell({ activeDestination, children, navigation }: { activeDestination: DrawerDestination; children: (openMenu: () => void) => ReactNode; navigation: NavigationProp<PassengerStackParamList> }) {
+  const { switchToDriver } = useAppMode();
   const [menuVisible, setMenuVisible] = useState(false);
   const logout = async () => { await authService.clearSession(); setMenuVisible(false); navigation.reset({ index: 0, routes: [{ name: 'Login' }] }); };
-  return <>{children(() => setMenuVisible(true))}<HomeDrawer activeDestination={activeDestination} onClose={() => setMenuVisible(false)} onLogout={() => void logout()} onNavigate={(destination) => navigateToDestination(navigation, destination)} visible={menuVisible} /></>;
+  return <>{children(() => setMenuVisible(true))}<HomeDrawer activeDestination={activeDestination} onClose={() => setMenuVisible(false)} onLogout={() => void logout()} onNavigate={(destination) => navigateToDestination(navigation, destination)} onSwitchToDriver={switchToDriver} visible={menuVisible} /></>;
 }
 
 function SplashRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Splash'>) { return <SplashScreen onContinue={() => { void authService.hasSession().then(hasSession => navigation.replace(hasSession ? 'Home' : 'Login')); }} />; }
@@ -65,7 +67,10 @@ function OutstationRoute({ navigation }: NativeStackScreenProps<PassengerStackPa
 function OutstationPickupRoute({navigation}:NativeStackScreenProps<PassengerStackParamList,'OutstationPickup'>){const draft=useBookingDraft();return <AuthenticatedShell activeDestination="home" navigation={navigation}>{openMenu=><LocationSelectionScreen onBack={()=>navigation.goBack()} onMenuPress={openMenu} onSelected={location=>{draft.setOutstationPickup(location);navigation.goBack();}} scope="outstation" title="Outstation pickup"/>}</AuthenticatedShell>;}
 function OutstationDestinationRoute({navigation}:NativeStackScreenProps<PassengerStackParamList,'OutstationDestination'>){const draft=useBookingDraft();return <AuthenticatedShell activeDestination="home" navigation={navigation}>{openMenu=><LocationSelectionScreen onBack={()=>navigation.goBack()} onMenuPress={openMenu} onSelected={location=>{draft.setOutstationDestination(location);navigation.goBack();}} scope="outstation" title="Outstation destination"/>}</AuthenticatedShell>;}
 function NotificationsRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Notifications'>) { return <AuthenticatedShell activeDestination="home" navigation={navigation}>{openMenu => <NotificationsScreen onBack={() => navigation.goBack()} onMenuPress={openMenu}/>}</AuthenticatedShell>; }
-function SettingsRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Settings'>) { return <AuthenticatedShell activeDestination="settings" navigation={navigation}>{openMenu => <PassengerSettingsScreen onBack={() => navigation.goBack()} onMenuPress={openMenu} />}</AuthenticatedShell>; }
+function SettingsRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Settings'>) {
+  const { switchToDriver } = useAppMode();
+  return <AuthenticatedShell activeDestination="settings" navigation={navigation}>{openMenu => <PassengerSettingsScreen onBack={() => navigation.goBack()} onMenuPress={openMenu} onSwitchToDriver={switchToDriver} />}</AuthenticatedShell>;
+}
 
 export function PassengerNavigator() {
   const [pickup, setPickup] = useState<LocationOption | null>(null); const [destination, setDestination] = useState<LocationOption | null>(null); const [categoryId, setCategoryId] = useState<number | null>(null);
