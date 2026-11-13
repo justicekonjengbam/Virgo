@@ -46,34 +46,26 @@ function cleanDigits(phone: string): string {
 }
 
 export const authService = {
+  async loginWithPassword(phoneNumber: string, pinOrPassword: string): Promise<AuthSession> {
+    const canonicalPhone = cleanDigits(phoneNumber);
+    const response = await apiClient.post<AuthSession>(
+      '/api/v1/auth/passengers/login',
+      { phone_number: canonicalPhone, password: pinOrPassword },
+    );
+    await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(response.data));
+    return response.data;
+  },
+
   async requestOtp(phoneNumber: string, intent: PhoneAuthIntent): Promise<OtpRequestResult> {
     const canonicalPhone = cleanDigits(phoneNumber);
 
-    // Use the backend direct OTP flow (no SMS billing required)
-    if (true) {
-      if (intent === 'login') {
-        // Preflight verifies that an active, verified account exists before sending OTP
-        await apiClient.post('/api/v1/auth/passengers/firebase/login/preflight', {
-          phone_number: canonicalPhone,
-        });
-      }
-      const response = await apiClient.post<{ message: string; development_otp?: string }>(
-        '/api/v1/auth/passengers/otp/request',
-        { phone_number: canonicalPhone },
-      );
-      return {
-        isDevOtp: true,
-        phoneNumber: canonicalPhone,
-        developmentOtp: response.data.development_otp,
-      };
-    }
-
-    // Production flow: Firebase Phone Authentication
     if (intent === 'login') {
+      // Preflight verifies that an active, verified account exists before sending OTP
       await apiClient.post('/api/v1/auth/passengers/firebase/login/preflight', {
         phone_number: canonicalPhone,
       });
     }
+
     if (auth().currentUser) {
       await withFirebaseTimeout(
         auth().signOut(),
@@ -81,16 +73,37 @@ export const authService = {
         'Previous phone session could not be reset.',
       );
     }
-    const firebaseConfirmation = await withFirebaseTimeout(
-      auth().signInWithPhoneNumber(`+91${canonicalPhone}`),
-      'auth/otp-request-timeout',
-      'OTP request timed out.',
-    );
-    return {
-      isDevOtp: false,
-      phoneNumber: canonicalPhone,
-      firebaseConfirmation,
-    };
+
+    try {
+      const firebaseConfirmation = await withFirebaseTimeout(
+        auth().signInWithPhoneNumber(`+91${canonicalPhone}`),
+        'auth/otp-request-timeout',
+        'OTP request timed out.',
+      );
+      return {
+        isDevOtp: false,
+        phoneNumber: canonicalPhone,
+        firebaseConfirmation,
+      };
+    } catch (fbError: unknown) {
+      // If Firebase fails in development mode, fallback to backend dev OTP
+      if (__DEV__) {
+        try {
+          const response = await apiClient.post<{ message: string; development_otp?: string }>(
+            '/api/v1/auth/passengers/otp/request',
+            { phone_number: canonicalPhone },
+          );
+          return {
+            isDevOtp: true,
+            phoneNumber: canonicalPhone,
+            developmentOtp: response.data.development_otp,
+          };
+        } catch {
+          // Keep original Firebase error
+        }
+      }
+      throw fbError;
+    }
   },
 
   async verifyOtp(
@@ -98,6 +111,7 @@ export const authService = {
     otp: string,
     intent: PhoneAuthIntent,
     fullName?: string,
+    password?: string,
   ): Promise<AuthSession> {
     // Development OTP verification path
     if (confirmation.isDevOtp) {
@@ -145,6 +159,7 @@ export const authService = {
       const response = await apiClient.post<AuthSession>(route, {
         id_token: idToken,
         full_name: fullName,
+        password: password,
       });
       await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(response.data));
       return response.data;

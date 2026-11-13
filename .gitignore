@@ -29,3 +29,15 @@ backend/secrets/
 /driver-*.png
 /passenger-*.png
 /*-ui.xml
+
+# Firebase Credentials & Service Accounts (Never commit private keys)
+*firebase-service-account*.json
+virgo-*.json
+*-firebase-adminsdk-*.json
+google-services.json
+*/google-services.json
+**/google-services.json
+backend/*.json
+!package.json
+!passenger-app/package.json
+!driver-app/package.json

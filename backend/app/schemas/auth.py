@@ -10,7 +10,7 @@ def normalize_phone(value: str) -> str:
 class PassengerSignupRequest(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     phone_number: str = Field(min_length=10, max_length=20)
-    password: str = Field(min_length=8, max_length=128)
+    password: str = Field(min_length=4, max_length=128)
 
     @field_validator("phone_number")
     @classmethod
@@ -21,7 +21,7 @@ class PassengerSignupRequest(BaseModel):
 
 class PasswordLoginRequest(BaseModel):
     phone_number: str
-    password: str = Field(min_length=8, max_length=128)
+    password: str = Field(min_length=4, max_length=128)
 
     _normalize_phone = field_validator("phone_number")(normalize_phone)
 
@@ -42,6 +42,7 @@ class RefreshRequest(BaseModel):
 class FirebaseLoginRequest(BaseModel):
     id_token: str = Field(min_length=1)
     full_name: str | None = Field(default=None, min_length=2, max_length=120)
+    password: str | None = Field(default=None, min_length=4, max_length=128)
 
 
 class DriverFirebaseLoginRequest(BaseModel):

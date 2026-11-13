@@ -46,7 +46,7 @@ def firebase_login(request: FirebaseLoginRequest, db: Session = Depends(get_db))
 
 @router.post('/firebase/signup', response_model=TokenResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(rate_limit(login_limiter, 'passenger_fb_signup'))])
 def firebase_signup(request: FirebaseLoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
-    return service.firebase_signup(db, request.id_token, request.full_name)
+    return service.firebase_signup(db, request.id_token, request.full_name, request.password)
 
 
 @router.post('/firebase/login/preflight', status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(rate_limit(otp_request_limiter, 'passenger_preflight'))])

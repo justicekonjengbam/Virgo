@@ -90,16 +90,17 @@ class AuthService:
         self.repository.save(db, passenger)
         return self._tokens(passenger)
 
-    def firebase_signup(self, db: Session, id_token: str, full_name: str | None) -> TokenResponse:
+    def firebase_signup(self, db: Session, id_token: str, full_name: str | None, password: str | None = None) -> TokenResponse:
         firebase_uid, phone_number = self._verified_firebase_identity(id_token)
         existing = self.repository.get_by_firebase_uid(db, firebase_uid) or self.repository.get_by_phone(db, phone_number)
         if existing:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='An account already exists for this number. Please log in.')
+        pwd = password.strip() if password and len(password.strip()) >= 4 else secrets.token_urlsafe(32)
         passenger = Passenger(
             full_name=full_name.strip() if full_name else 'Passenger',
             phone_number=phone_number,
             firebase_uid=firebase_uid,
-            password_hash=password_hash.hash(secrets.token_urlsafe(32)),
+            password_hash=password_hash.hash(pwd),
             is_phone_verified=True,
             last_login_at=datetime.now(UTC),
         )
