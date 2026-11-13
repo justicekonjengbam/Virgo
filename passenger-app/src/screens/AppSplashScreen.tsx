@@ -1,15 +1,18 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Pressable, SafeAreaView, StyleSheet, View } from 'react-native';
+import { Animated, SafeAreaView, StyleSheet, View } from 'react-native';
 
 import { BrandMark } from '../components/auth/BrandMark';
 import { DsButton, DsText } from '../components/design-system';
-import { colors, spacing } from '../theme';
+import { colors, radius, shadows, spacing } from '../theme';
 
 type AppSplashScreenProps = {
   onFinish: () => void;
 };
 
-/** Root splash screen displaying the brand logo and message on app startup. */
+/**
+ * Startup splash screen featuring the Virgo logo, title, and tagline.
+ * Remains visible until the user explicitly taps "Get Started".
+ */
 export function AppSplashScreen({ onFinish }: AppSplashScreenProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
@@ -25,27 +28,22 @@ export function AppSplashScreen({ onFinish }: AppSplashScreenProps) {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 650,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
         friction: 6,
+        tension: 40,
         useNativeDriver: true,
       }),
     ]).start();
-
-    // Auto-advance after 2 seconds so user doesn't have to wait or tap if they prefer
-    const timer = setTimeout(() => {
-      handleFinish();
-    }, 2200);
-
-    return () => clearTimeout(timer);
+    // Intentionally no auto-advance timer: stays until the user presses "Get Started"
   }, [fadeAnim, scaleAnim]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Pressable onPress={handleFinish} style={styles.content}>
+      <View style={styles.content}>
         <Animated.View
           style={[
             styles.hero,
@@ -55,7 +53,10 @@ export function AppSplashScreen({ onFinish }: AppSplashScreenProps) {
             },
           ]}
         >
-          <BrandMark size={115} />
+          <View style={styles.logoWrapper}>
+            <BrandMark size={120} />
+          </View>
+
           <View style={styles.brandTitleContainer}>
             <DsText color={colors.primary} style={styles.title} variant="display">
               VIRGO
@@ -64,6 +65,9 @@ export function AppSplashScreen({ onFinish }: AppSplashScreenProps) {
               Happy Cabbing
             </DsText>
           </View>
+
+          <View style={styles.divider} />
+
           <View style={styles.messageBox}>
             <DsText color={colors.textPrimary} style={styles.headline} variant="bodyMedium">
               Imphal is changing.
@@ -74,8 +78,18 @@ export function AppSplashScreen({ onFinish }: AppSplashScreenProps) {
           </View>
         </Animated.View>
 
-        <DsButton label="Get Started" onPress={handleFinish} size="large" />
-      </Pressable>
+        <View style={styles.footer}>
+          <DsButton
+            label="Get Started"
+            onPress={handleFinish}
+            size="large"
+            variant="primary"
+          />
+          <DsText color={colors.textTertiary} style={styles.versionText} variant="caption">
+            Virgo • Happy Cabbing • v1.0.0
+          </DsText>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -88,19 +102,26 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: spacing.xxl,
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xxl,
   },
   hero: {
     alignItems: 'center',
     gap: spacing.md,
-    marginTop: '32%',
+    marginTop: '28%',
+  },
+  logoWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
   },
   brandTitleContainer: {
     alignItems: 'center',
     gap: 2,
   },
   title: {
-    fontSize: 38,
+    fontSize: 40,
     fontWeight: '800',
     letterSpacing: 2,
     textAlign: 'center',
@@ -110,20 +131,33 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textAlign: 'center',
   },
+  divider: {
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.pill,
+    height: 3,
+    marginTop: spacing.xs,
+    width: 48,
+  },
   messageBox: {
     alignItems: 'center',
     gap: spacing.xs,
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
   },
   headline: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 13,
-    lineHeight: 18,
+    lineHeight: 19,
+    textAlign: 'center',
+  },
+  footer: {
+    gap: spacing.md,
+    width: '100%',
+  },
+  versionText: {
     textAlign: 'center',
   },
 });
-

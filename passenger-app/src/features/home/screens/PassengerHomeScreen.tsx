@@ -37,6 +37,7 @@ type PassengerHomeScreenProps = {
   onOpenNotifications: () => void;
   activeRideId?: number | null;
   onResumeRide?: () => void;
+  onSwitchToDriver?: () => void;
 };
 
 /** Passenger home - Presentation Ready */
@@ -54,6 +55,7 @@ export function PassengerHomeScreen({
   onOpenNotifications,
   activeRideId,
   onResumeRide,
+  onSwitchToDriver,
 }: PassengerHomeScreenProps) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -334,6 +336,7 @@ export function PassengerHomeScreen({
           setMenuVisible(false);
           onMenuNavigate(destination);
         }}
+        onSwitchToDriver={onSwitchToDriver}
         visible={menuVisible}
       />
     </SafeAreaView>

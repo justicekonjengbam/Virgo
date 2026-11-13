@@ -24,7 +24,7 @@ function AppContent() {
     return <DriverNavigator />;
   }
 
-  return <ModeSelectionScreen />;
+  return <ModeSelectionScreen onBack={() => setShowSplash(true)} />;
 }
 
 export default function App() {

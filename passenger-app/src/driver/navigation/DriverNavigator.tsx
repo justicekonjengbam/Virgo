@@ -49,7 +49,8 @@ function SplashRoute({ navigation }: NativeStackScreenProps<DriverStackParamList
 }
 
 function LoginRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Login'>) {
-  return <DriverLoginScreen onAuthenticated={session => navigation.reset({ index: 0, routes: [{ name: session.driver.onboarding_completed ? 'Home' : 'Onboarding' }] })} onBack={() => navigation.replace('Splash')} onHelp={() => navigation.navigate('Help')} onSignup={() => navigation.replace('Signup')} />;
+  const { clearMode } = useAppMode();
+  return <DriverLoginScreen onAuthenticated={session => navigation.reset({ index: 0, routes: [{ name: session.driver.onboarding_completed ? 'Home' : 'Onboarding' }] })} onBack={() => void clearMode()} onHelp={() => navigation.navigate('Help')} onSignup={() => navigation.replace('Signup')} />;
 }
 
 function SignupRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Signup'>) {
@@ -65,10 +66,10 @@ function OnboardingRoute({ navigation }: NativeStackScreenProps<DriverStackParam
 }
 
 function HomeRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Home'>) {
-  const { switchToPassenger } = useAppMode();
+  const { switchToPassenger, clearMode } = useAppMode();
   const logout = async () => {
     await driverAuthService.clearSession();
-    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    await clearMode();
   };
   return <DriverHomeScreen onLogout={() => void logout()} onOpenActiveRide={() => navigation.navigate('ActiveRide')} onOpenDocuments={() => navigation.navigate('Documents')} onOpenEarnings={() => navigation.navigate('Earnings')} onOpenHelp={() => navigation.navigate('Help')} onOpenOutstation={() => navigation.navigate('Outstation')} onOpenRequest={() => navigation.navigate('RideRequest')} onOpenSettings={() => navigation.navigate('Settings')} onOpenTripHistory={() => navigation.navigate('TripHistory')} onSwitchToPassenger={switchToPassenger} />;
 }

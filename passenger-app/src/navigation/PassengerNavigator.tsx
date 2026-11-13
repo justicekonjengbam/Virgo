@@ -42,9 +42,13 @@ function navigateToDestination(navigation: NavigationProp<PassengerStackParamLis
 }
 
 function AuthenticatedShell({ activeDestination, children, navigation }: { activeDestination: DrawerDestination; children: (openMenu: () => void) => ReactNode; navigation: NavigationProp<PassengerStackParamList> }) {
-  const { switchToDriver } = useAppMode();
+  const { switchToDriver, clearMode } = useAppMode();
   const [menuVisible, setMenuVisible] = useState(false);
-  const logout = async () => { await authService.clearSession(); setMenuVisible(false); navigation.reset({ index: 0, routes: [{ name: 'Login' }] }); };
+  const logout = async () => {
+    await authService.clearSession();
+    setMenuVisible(false);
+    await clearMode();
+  };
   return <>{children(() => setMenuVisible(true))}<HomeDrawer activeDestination={activeDestination} onClose={() => setMenuVisible(false)} onLogout={() => void logout()} onNavigate={(destination) => navigateToDestination(navigation, destination)} onSwitchToDriver={switchToDriver} visible={menuVisible} /></>;
 }
 
@@ -54,10 +58,24 @@ function SplashRoute({ navigation }: NativeStackScreenProps<PassengerStackParamL
   }, [navigation]);
   return <SplashScreen onContinue={() => { void authService.hasSession().then(hasSession => navigation.replace(hasSession ? 'Home' : 'Login')); }} />;
 }
-function LoginRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Login'>) { return <LoginScreen onAuthenticated={() => resetToHome(navigation)} onBack={() => navigation.navigate('Splash')} onHelp={() => navigation.navigate('Faq')} onSignup={() => navigation.navigate('Signup')} />; }
+function LoginRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Login'>) {
+  const { clearMode } = useAppMode();
+  return <LoginScreen onAuthenticated={() => resetToHome(navigation)} onBack={() => void clearMode()} onHelp={() => navigation.navigate('Faq')} onSignup={() => navigation.navigate('Signup')} />;
+}
 function SignupRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Signup'>) { return <SignupScreen onAuthenticated={() => resetToHome(navigation)} onBack={() => navigation.goBack()} onHelp={() => navigation.navigate('Faq')} onLogin={() => navigation.replace('Login')} />; }
 function FaqRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Faq'>) { return <FaqScreen onBack={() => navigation.goBack()} />; }
-function HomeRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Home'>) { const draft = useBookingDraft(); const [activeRide, setActiveRide] = useState<RideStatus | null>(null); useEffect(() => { void bookingApi.activeRide().then(setActiveRide).catch(() => undefined); }, []); const resume = () => activeRide && navigation.navigate('Booking', { ride: { ride_id: activeRide.ride_id, status: activeRide.status, pickup_address: activeRide.pickup_address, destination_address: activeRide.destination_address, fare_paise: activeRide.fare_paise, requested_at: new Date().toISOString(), message: activeRide.message } }); return <PassengerHomeScreen activeRideId={activeRide?.ride_id} destination={draft.destination} onBookInstantRide={() => navigation.navigate('InstantRide')} onBookOutstation={() => navigation.navigate('Outstation')} onContinueToFare={(categoryId) => { draft.setCategoryId(categoryId); navigation.navigate('Fare'); }} onEditSavedPlace={(place) => navigation.navigate('SavedPlace', { place })} onLogout={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })} onMenuNavigate={(destination) => navigateToDestination(navigation, destination)} onOpenNotifications={() => navigation.navigate('Notifications')} onResumeRide={resume} onSelectDestination={() => navigation.navigate('Destination')} onSelectPickup={() => navigation.navigate('Pickup')} pickup={draft.pickup} />; }
+function HomeRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Home'>) {
+  const { switchToDriver, clearMode } = useAppMode();
+  const draft = useBookingDraft();
+  const [activeRide, setActiveRide] = useState<RideStatus | null>(null);
+  useEffect(() => { void bookingApi.activeRide().then(setActiveRide).catch(() => undefined); }, []);
+  const resume = () => activeRide && navigation.navigate('Booking', { ride: { ride_id: activeRide.ride_id, status: activeRide.status, pickup_address: activeRide.pickup_address, destination_address: activeRide.destination_address, fare_paise: activeRide.fare_paise, requested_at: new Date().toISOString(), message: activeRide.message } });
+  const logout = async () => {
+    await authService.clearSession();
+    await clearMode();
+  };
+  return <PassengerHomeScreen activeRideId={activeRide?.ride_id} destination={draft.destination} onBookInstantRide={() => navigation.navigate('InstantRide')} onBookOutstation={() => navigation.navigate('Outstation')} onContinueToFare={(categoryId) => { draft.setCategoryId(categoryId); navigation.navigate('Fare'); }} onEditSavedPlace={(place) => navigation.navigate('SavedPlace', { place })} onLogout={() => void logout()} onMenuNavigate={(destination) => navigateToDestination(navigation, destination)} onOpenNotifications={() => navigation.navigate('Notifications')} onResumeRide={resume} onSelectDestination={() => navigation.navigate('Destination')} onSelectPickup={() => navigation.navigate('Pickup')} onSwitchToDriver={switchToDriver} pickup={draft.pickup} />;
+}
 function PickupRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Pickup'>) { const draft = useBookingDraft(); return <AuthenticatedShell activeDestination="home" navigation={navigation}>{openMenu => <LocationSelectionScreen onBack={() => navigation.goBack()} onMenuPress={openMenu} onSelected={(location) => { draft.setPickup(location); navigation.goBack(); }} title="Choose pickup" />}</AuthenticatedShell>; }
 function DestinationRoute({ navigation }: NativeStackScreenProps<PassengerStackParamList, 'Destination'>) { const draft = useBookingDraft(); return <AuthenticatedShell activeDestination="home" navigation={navigation}>{openMenu => <LocationSelectionScreen onBack={() => navigation.goBack()} onMenuPress={openMenu} onSelected={(location) => { draft.setDestination(location); navigation.goBack(); }} title="Choose destination" />}</AuthenticatedShell>; }
 function SavedPlaceRoute({ navigation, route }: NativeStackScreenProps<PassengerStackParamList, 'SavedPlace'>) { return <AuthenticatedShell activeDestination="addresses" navigation={navigation}>{openMenu => <LocationSelectionScreen onBack={() => navigation.goBack()} onMenuPress={openMenu} onSelected={async location => { await bookingApi.updateSavedPlace(route.params.place.id, location); navigation.goBack(); }} title={`Set ${route.params.place.label} address`} />}</AuthenticatedShell>; }

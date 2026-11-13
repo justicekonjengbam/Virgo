@@ -2,51 +2,92 @@ import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { BrandMark } from '../components/auth/BrandMark';
-import { DsCard, DsText } from '../components/design-system';
+import { DsText } from '../components/design-system';
 import { useAppMode } from '../context/AppModeContext';
 import { colors, radius, shadows, spacing } from '../theme';
 
-export function ModeSelectionScreen() {
+interface ModeSelectionScreenProps {
+  onBack?: () => void;
+}
+
+/**
+ * Clean, modern Mode Selection screen.
+ * Allows the user to choose between Passenger ("Book a Ride") and Driver ("Drive & Earn").
+ */
+export function ModeSelectionScreen({ onBack }: ModeSelectionScreenProps) {
   const { setMode } = useAppMode();
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        {/* Brand Header */}
-        <View style={styles.header}>
-          <BrandMark size={70} />
+        {/* Top Header */}
+        <View style={styles.topBar}>
+          {onBack ? (
+            <TouchableOpacity
+              accessibilityLabel="Back to splash"
+              activeOpacity={0.7}
+              onPress={onBack}
+              style={styles.backButton}
+            >
+              <MaterialCommunityIcons color={colors.primary} name="chevron-left" size={28} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.backButtonPlaceholder} />
+          )}
+
+          <BrandMark size={55} />
+
+          <View style={styles.backButtonPlaceholder} />
         </View>
 
-        {/* Title */}
-        <View style={styles.titleBlock}>
-          <DsText variant="h1" style={styles.heading}>
+        {/* Title & Introduction */}
+        <View style={styles.titleSection}>
+          <DsText style={styles.mainTitle} variant="h1">
             How will you use Virgo today?
           </DsText>
-          <DsText color={colors.textSecondary} variant="body">
-            Choose your mode to get started. You can easily switch between riding and driving anytime in your profile.
+          <DsText color={colors.textSecondary} style={styles.subTitle} variant="body">
+            Choose your mode to begin. You can switch between riding and driving anytime.
           </DsText>
         </View>
 
-        {/* Options */}
-        <View style={styles.cards}>
+        {/* Selection Cards */}
+        <View style={styles.cardsContainer}>
           {/* Passenger Option */}
           <TouchableOpacity
             activeOpacity={0.88}
             onPress={() => void setMode('passenger')}
             style={styles.cardTouch}
           >
-            <DsCard elevated style={styles.optionCard}>
-              <View style={[styles.iconCircle, { backgroundColor: colors.primarySoft }]}>
-                <MaterialCommunityIcons color={colors.primary} name="car-clock" size={32} />
+            <View style={styles.optionCard}>
+              <View style={styles.cardTopRow}>
+                <View style={[styles.iconBox, { backgroundColor: colors.primarySoft }]}>
+                  <MaterialCommunityIcons color={colors.primary} name="car-hatchback" size={30} />
+                </View>
+                <View style={styles.roleBadgePassenger}>
+                  <DsText color={colors.primary} style={styles.roleBadgeText} variant="caption">
+                    RIDER
+                  </DsText>
+                </View>
               </View>
-              <View style={styles.cardText}>
-                <DsText variant="h2">Book a Ride</DsText>
-                <DsText color={colors.textSecondary} variant="caption">
-                  Fast, safe, and transparently priced cabs across Imphal and beyond.
+
+              <View style={styles.cardBody}>
+                <DsText style={styles.cardTitle} variant="h2">
+                  Book a Ride
+                </DsText>
+                <DsText color={colors.textSecondary} style={styles.cardDescription} variant="body">
+                  Safe, reliable, and upfront-priced cabs across Imphal and outstation trips.
                 </DsText>
               </View>
-              <MaterialCommunityIcons color={colors.primary} name="chevron-right" size={28} />
-            </DsCard>
+
+              <View style={styles.cardFooter}>
+                <DsText color={colors.primary} style={styles.actionText} variant="bodyMedium">
+                  Continue as Rider
+                </DsText>
+                <View style={styles.arrowCircle}>
+                  <MaterialCommunityIcons color={colors.white} name="arrow-right" size={16} />
+                </View>
+              </View>
+            </View>
           </TouchableOpacity>
 
           {/* Driver Option */}
@@ -55,26 +96,48 @@ export function ModeSelectionScreen() {
             onPress={() => void setMode('driver')}
             style={styles.cardTouch}
           >
-            <DsCard elevated style={styles.optionCard}>
-              <View style={[styles.iconCircle, { backgroundColor: colors.successSoft || '#E8F5E9' }]}>
-                <MaterialCommunityIcons color={colors.success} name="steering" size={32} />
+            <View style={styles.optionCard}>
+              <View style={styles.cardTopRow}>
+                <View style={[styles.iconBox, { backgroundColor: colors.successSoft || '#E8F5E9' }]}>
+                  <MaterialCommunityIcons color={colors.success} name="steering" size={30} />
+                </View>
+                <View style={styles.roleBadgeDriver}>
+                  <DsText color={colors.success} style={styles.roleBadgeText} variant="caption">
+                    PARTNER
+                  </DsText>
+                </View>
               </View>
-              <View style={styles.cardText}>
-                <DsText variant="h2">Drive & Earn</DsText>
-                <DsText color={colors.textSecondary} variant="caption">
-                  Accept ride requests, manage your vehicle, and track daily earnings.
+
+              <View style={styles.cardBody}>
+                <DsText style={styles.cardTitle} variant="h2">
+                  Drive & Earn
+                </DsText>
+                <DsText color={colors.textSecondary} style={styles.cardDescription} variant="body">
+                  Accept nearby ride requests, track earnings daily, and drive on your schedule.
                 </DsText>
               </View>
-              <MaterialCommunityIcons color={colors.primary} name="chevron-right" size={28} />
-            </DsCard>
+
+              <View style={styles.cardFooter}>
+                <DsText color={colors.success} style={styles.actionText} variant="bodyMedium">
+                  Continue as Driver
+                </DsText>
+                <View style={[styles.arrowCircle, { backgroundColor: colors.success }]}>
+                  <MaterialCommunityIcons color={colors.white} name="arrow-right" size={16} />
+                </View>
+              </View>
+            </View>
           </TouchableOpacity>
         </View>
 
-        {/* Bottom Info Note */}
-        <View style={styles.footer}>
-          <MaterialCommunityIcons color={colors.textTertiary} name="information-outline" size={18} />
-          <DsText color={colors.textTertiary} variant="caption" style={styles.footerText}>
-            You can toggle between Passenger & Driver modes anytime from the side drawer.
+        {/* Bottom Switch Note */}
+        <View style={styles.footerNote}>
+          <MaterialCommunityIcons
+            color={colors.textTertiary}
+            name="swap-horizontal-circle-outline"
+            size={20}
+          />
+          <DsText color={colors.textTertiary} style={styles.footerNoteText} variant="caption">
+            Switch between Rider & Driver anytime from your side drawer or Settings.
           </DsText>
         </View>
       </View>
@@ -89,59 +152,142 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl,
-    paddingBottom: spacing.xl,
     justifyContent: 'space-between',
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
   },
-  header: {
+  topBar: {
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    minHeight: 48,
   },
-  titleBlock: {
-    gap: spacing.sm,
-    marginTop: spacing.xl,
+  backButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+    ...shadows.card,
   },
-  heading: {
+  backButtonPlaceholder: {
+    height: 40,
+    width: 40,
+  },
+  titleSection: {
+    gap: spacing.xs,
+    marginTop: spacing.md,
+  },
+  mainTitle: {
+    color: colors.textPrimary,
     fontSize: 26,
-    lineHeight: 32,
+    fontWeight: '800',
+    lineHeight: 33,
   },
-  cards: {
+  subTitle: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  cardsContainer: {
     gap: spacing.lg,
-    marginVertical: spacing.xl,
+    marginVertical: spacing.lg,
   },
   cardTouch: {
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
   },
   optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.lg,
-    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderWidth: 1,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    gap: spacing.md,
+    padding: spacing.xl,
+    ...shadows.raised,
   },
-  iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: radius.pill,
+  cardTopRow: {
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardText: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  footer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
+    justifyContent: 'space-between',
   },
-  footerText: {
-    textAlign: 'center',
+  iconBox: {
+    alignItems: 'center',
+    borderRadius: radius.lg,
+    height: 52,
+    justifyContent: 'center',
+    width: 52,
+  },
+  roleBadgePassenger: {
+    backgroundColor: colors.primarySoft,
+    borderColor: colors.primaryLight,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
+  },
+  roleBadgeDriver: {
+    backgroundColor: colors.successSoft || '#E8F5E9',
+    borderColor: '#C8E6C9',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
+  },
+  roleBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  cardBody: {
+    gap: spacing.xs,
+  },
+  cardTitle: {
+    color: colors.textPrimary,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  cardDescription: {
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  cardFooter: {
+    alignItems: 'center',
+    borderTopColor: colors.border,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: spacing.md,
+  },
+  actionText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  arrowCircle: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: radius.pill,
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  footerNote: {
+    alignItems: 'center',
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  footerNoteText: {
     flex: 1,
+    fontSize: 12,
+    lineHeight: 16,
   },
 });
-
