@@ -24,6 +24,8 @@ backend/secrets/
 *.jks
 *.apk
 *.idsig
+*.pem
+*.key
 
 # Local device/emulator diagnostics
 /driver-*.png
