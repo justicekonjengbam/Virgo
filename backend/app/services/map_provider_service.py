@@ -84,31 +84,21 @@ class MapProviderService:
                 service_radius_km=self.service_radius_km,
                 offline_mode=False,
             )
-        if get_settings().environment == 'development':
-            logger.info('DEV_OFFLINE_MAP: GEOAPIFY_API_KEY is missing. Using OpenStreetMap/Carto Voyager raster fallback.')
-            style_endpoint = f"{base_url.rstrip('/')}/api/v1/maps/style.json" if base_url else '/api/v1/maps/style.json'
-            return MapConfigResponse(
-                style_url=style_endpoint,
-                attribution='© OpenStreetMap contributors · CARTO',
-                service_area=self.bounds,
-                service_center=[self.center_longitude, self.center_latitude],
-                service_radius_km=self.service_radius_km,
-                offline_mode=True,
-            )
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail='Map services are not configured. Add GEOAPIFY_API_KEY to the backend environment.',
+        logger.info('GEOAPIFY_API_KEY is not configured. Serving OpenStreetMap/Carto Voyager raster fallback.')
+        style_endpoint = f"{base_url.rstrip('/')}/api/v1/maps/style.json" if base_url else '/api/v1/maps/style.json'
+        return MapConfigResponse(
+            style_url=style_endpoint,
+            attribution='© OpenStreetMap contributors · CARTO',
+            service_area=self.bounds,
+            service_center=[self.center_longitude, self.center_latitude],
+            service_radius_km=self.service_radius_km,
+            offline_mode=True,
         )
 
     def search(self, query: str, outstation: bool = False) -> list[GeocodedPlaceResponse]:
         key = get_settings().geoapify_api_key
         if not key:
-            if get_settings().environment == 'development':
-                return self._offline_catalog_search(query, outstation)
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail='Map services are not configured. Add GEOAPIFY_API_KEY to the backend environment.',
-            )
+            return self._offline_catalog_search(query, outstation)
 
         params = {
             'text': query,
@@ -132,12 +122,7 @@ class MapProviderService:
 
         key = get_settings().geoapify_api_key
         if not key:
-            if get_settings().environment == 'development':
-                return self._offline_catalog_reverse(latitude, longitude, outstation)
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail='Map services are not configured. Add GEOAPIFY_API_KEY to the backend environment.',
-            )
+            return self._offline_catalog_reverse(latitude, longitude, outstation)
 
         payload = self._get('/geocode/reverse', {
             'lat': latitude, 'lon': longitude, 'format': 'json', 'lang': 'en',
@@ -163,12 +148,7 @@ class MapProviderService:
     def route(self, origin: tuple[float, float], destination: tuple[float, float]) -> RouteResponse:
         key = get_settings().geoapify_api_key
         if not key:
-            if get_settings().environment == 'development':
-                return self._offline_route(origin, destination)
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail='Map services are not configured. Add GEOAPIFY_API_KEY to the backend environment.',
-            )
+            return self._offline_route(origin, destination)
 
         payload = self._get('/routing', {
             'waypoints': f'{origin[0]},{origin[1]}|{destination[0]},{destination[1]}',

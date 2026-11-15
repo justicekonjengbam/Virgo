@@ -51,7 +51,7 @@ def test_map_provider_offline_fallback_in_development():
         assert route.duration_seconds > 0
 
 
-def test_map_provider_raises_503_in_production_without_key():
+def test_map_provider_falls_back_in_production_without_key():
     prod_settings = Settings(
         environment='production',
         jwt_secret_key='a' * 32,
@@ -59,21 +59,19 @@ def test_map_provider_raises_503_in_production_without_key():
     )
     with patch('app.services.map_provider_service.get_settings', return_value=prod_settings):
         service = MapProviderService()
-        with pytest.raises(HTTPException) as exc:
-            service.config()
-        assert exc.value.status_code == 503
+        config = service.config()
+        assert config.offline_mode is True
+        assert '/api/v1/maps/style.json' in config.style_url
 
-        with pytest.raises(HTTPException) as exc:
-            service.search('Kangla')
-        assert exc.value.status_code == 503
+        search = service.search('Kangla')
+        assert len(search) > 0
 
-        with pytest.raises(HTTPException) as exc:
-            service.reverse(24.8170, 93.9368)
-        assert exc.value.status_code == 503
+        reverse = service.reverse(24.8170, 93.9368)
+        assert reverse.latitude is not None
 
-        with pytest.raises(HTTPException) as exc:
-            service.route((24.8170, 93.9368), (24.7600, 93.8967))
-        assert exc.value.status_code == 503
+        route = service.route((24.8170, 93.9368), (24.7600, 93.8967))
+        assert route.distance_meters > 0
+        assert route.is_estimated is True
 
 
 def test_ride_matching_dev_simulation_matches_karnataka_test_driver():

@@ -10,15 +10,59 @@ import { mapService } from '../services/mapService';
 type Coordinate = { latitude: number; longitude: number };
 type Props = { pickup?: Coordinate | null; destination?: Coordinate | null; driver?: Coordinate | null; route?: GeoJSON.Geometry | null; showUserLocation?: boolean; height?: number; onMapPress?: (coordinate: Coordinate) => void };
 
+const DEFAULT_MAP_STYLE = JSON.stringify({
+  version: 8,
+  name: 'Carto Voyager Raster',
+  sources: {
+    'carto-voyager': {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors, © CARTO',
+      maxzoom: 20,
+    },
+  },
+  layers: [
+    {
+      id: 'carto-voyager-layer',
+      type: 'raster',
+      source: 'carto-voyager',
+      minzoom: 0,
+      maxzoom: 20,
+    },
+  ],
+});
+
 export function VirgoMap({ pickup, destination, driver, route, showUserLocation = false, height = 240, onMapPress }: Props) {
-  const [styleUrl, setStyleUrl] = useState<string | null>(null);
+  const [styleUrl, setStyleUrl] = useState<string>(DEFAULT_MAP_STYLE);
   const [error, setError] = useState(false);
-  useEffect(() => { void mapService.configuration().then(value => setStyleUrl(value.style_url)).catch(() => setError(true)); }, []);
+  useEffect(() => {
+    void mapService
+      .configuration()
+      .then(value => {
+        if (value?.style_url) {
+          setStyleUrl(value.style_url);
+        }
+      })
+      .catch(() => {
+        // Fall back gracefully to built-in Carto Voyager raster tiles
+      });
+  }, []);
   const points = [pickup, destination, driver].filter(Boolean) as Coordinate[];
   const initialViewState = useMemo(() => points.length > 1 ? { bounds: bounds(points), padding: { top: 48, right: 48, bottom: 48, left: 48 } } : { center: points[0] ? [points[0].longitude, points[0].latitude] as [number, number] : [93.9368, 24.8170] as [number, number], zoom: points[0] ? 14 : 10 }, [destination?.latitude, destination?.longitude, driver?.latitude, driver?.longitude, pickup?.latitude, pickup?.longitude]);
   if (error) return <View style={[styles.fallback, { height }]}><MaterialCommunityIcons color={colors.textTertiary} name="map-off-outline" size={32} /><DsText color={colors.textSecondary}>Map is unavailable</DsText></View>;
-  if (!styleUrl) return <View style={[styles.fallback, { height }]}><DsLoading label="Loading map…" /></View>;
-  return <View style={[styles.container, { height }]}><Map mapStyle={styleUrl} onDidFailLoadingMap={() => setError(true)} onPress={event => { const [longitude, latitude] = event.nativeEvent.lngLat; onMapPress?.({ latitude, longitude }); }} style={styles.map}><Camera initialViewState={initialViewState} />{showUserLocation ? <UserLocation accuracy animated heading /> : null}{route ? <GeoJSONSource data={{ type: 'Feature', properties: {}, geometry: route }} id="ride-route"><Layer id="ride-route-line" paint={{ 'line-color': colors.primary, 'line-width': 5, 'line-opacity': 0.88 }} type="line" /></GeoJSONSource> : null}{pickup ? <MapMarker coordinate={pickup} icon="map-marker" id="pickup" tone={colors.primary} /> : null}{destination ? <MapMarker coordinate={destination} icon="map-marker-check" id="destination" tone={colors.success} /> : null}{driver ? <MapMarker coordinate={driver} icon="car" id="driver" tone={colors.textPrimary} /> : null}</Map>{onMapPress ? <View pointerEvents="none" style={styles.mapHint}><MaterialCommunityIcons color={colors.primary} name="gesture-tap" size={16} /><DsText color={colors.primary} style={styles.hintText}>Tap map to place pin</DsText></View> : null}<View pointerEvents="none" style={styles.attribution}><DsText color={colors.textSecondary} style={styles.attributionText}>© OpenStreetMap · Geoapify</DsText></View></View>;
+  return <View style={[styles.container, { height }]}><Map mapStyle={styleUrl} onDidFailLoadingMap={() => {
+    if (styleUrl !== DEFAULT_MAP_STYLE) {
+      setStyleUrl(DEFAULT_MAP_STYLE);
+    } else {
+      setError(true);
+    }
+  }} onPress={event => { const [longitude, latitude] = event.nativeEvent.lngLat; onMapPress?.({ latitude, longitude }); }} style={styles.map}><Camera initialViewState={initialViewState} />{showUserLocation ? <UserLocation accuracy animated heading /> : null}{route ? <GeoJSONSource data={{ type: 'Feature', properties: {}, geometry: route }} id="ride-route"><Layer id="ride-route-line" paint={{ 'line-color': colors.primary, 'line-width': 5, 'line-opacity': 0.88 }} type="line" /></GeoJSONSource> : null}{pickup ? <MapMarker coordinate={pickup} icon="map-marker" id="pickup" tone={colors.primary} /> : null}{destination ? <MapMarker coordinate={destination} icon="map-marker-check" id="destination" tone={colors.success} /> : null}{driver ? <MapMarker coordinate={driver} icon="car" id="driver" tone={colors.textPrimary} /> : null}</Map>{onMapPress ? <View pointerEvents="none" style={styles.mapHint}><MaterialCommunityIcons color={colors.primary} name="gesture-tap" size={16} /><DsText color={colors.primary} style={styles.hintText}>Tap map to place pin</DsText></View> : null}<View pointerEvents="none" style={styles.attribution}><DsText color={colors.textSecondary} style={styles.attributionText}>© OpenStreetMap · Geoapify</DsText></View></View>;
 }
 
 function MapMarker({ coordinate, icon, id, tone }: { coordinate: Coordinate; icon: string; id: string; tone: string }) { return <Marker anchor="bottom" id={id} lngLat={[coordinate.longitude, coordinate.latitude]}><View style={[styles.marker, { backgroundColor: tone }]}><MaterialCommunityIcons color={colors.white} name={icon} size={18} /></View></Marker>; }
