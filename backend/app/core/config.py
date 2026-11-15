@@ -5,7 +5,18 @@ from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DATABASE_URL = f"sqlite:///{(BACKEND_ROOT / 'cabapp.db').as_posix()}"
+DEFAULT_DATABASE_URL = 'postgresql+psycopg://postgres:postgres@localhost:5432/virgo'
+
+
+def normalize_database_url(database_url: str) -> str:
+    """Select psycopg 3 for PostgreSQL URLs, including Supabase connection strings."""
+    if database_url.startswith('postgres://'):
+        return 'postgresql+psycopg://' + database_url.removeprefix('postgres://')
+    if database_url.startswith('postgresql://'):
+        return 'postgresql+psycopg://' + database_url.removeprefix('postgresql://')
+    return database_url
+
+
 DEFAULT_FIREBASE_CREDENTIALS = (
     str(BACKEND_ROOT / 'firebase-service-account.json')
     if (BACKEND_ROOT / 'firebase-service-account.json').is_file()

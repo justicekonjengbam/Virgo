@@ -1,12 +1,12 @@
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from app.core.config import get_settings
+from app.core.config import get_settings, normalize_database_url
 from app.db import Base
 import app.models  # noqa: F401  Registers all domain models with Base.metadata.
 
 config = context.config
-config.set_main_option('sqlalchemy.url', get_settings().database_url)
+config.set_main_option('sqlalchemy.url', normalize_database_url(get_settings().database_url).replace('%', '%%'))
 
 target_metadata = Base.metadata
 

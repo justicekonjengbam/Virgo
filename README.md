@@ -66,3 +66,5 @@ cd backend
 Local `.env` files, databases, Python environments, dependency folders, signing keys, service-account credentials, APKs, logs, and build outputs are intentionally excluded from version control. Firebase Android client configuration files contain application identifiers but no private service-account keys.
 
 Detailed API, architecture, database, and Driver foundation notes are available in the `docs`, `documentation`, and `api-docs` directories.
+
+Database migration and PostgreSQL setup notes are in [docs/POSTGRESQL_HANDOFF.md](docs/POSTGRESQL_HANDOFF.md).

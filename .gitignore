@@ -6,9 +6,10 @@ node_modules/
 **/build/
 dist/
 coverage/
-.env
-.env.*.local
+.env*
 !.env.example
+!.env.example.md
+!.env.*.example
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -43,3 +44,15 @@ backend/*.json
 !package.json
 !passenger-app/package.json
 !driver-app/package.json
+
+# Database exports and local backups
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+*.dump
+*.backup
+*.sql.gz
+
+# Service-account credentials
+**/*service-account*.json

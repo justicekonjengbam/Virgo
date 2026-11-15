@@ -1,17 +1,19 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 
-from sqlalchemy import JSON, Boolean, CheckConstraint, DateTime, Float, ForeignKey, Index, Integer, Numeric, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, CheckConstraint, DateTime, Float, ForeignKey, Index, Integer, Numeric, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
 
+ACTIVE_RIDE_STATUSES = "'requested','searching','driver_assigned','driver_arriving','driver_arrived','in_progress'"
+
 
 class TimestampedModel:
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False)
 
 
 class PassengerProfile(TimestampedModel, Base):
@@ -60,7 +62,7 @@ class DriverVehicleAssignment(TimestampedModel, Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     driver_id: Mapped[int] = mapped_column(ForeignKey('drivers.id', ondelete='CASCADE'), nullable=False)
     vehicle_id: Mapped[int] = mapped_column(ForeignKey('vehicles.id', ondelete='RESTRICT'), nullable=False)
-    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
@@ -158,7 +160,13 @@ class RateCard(TimestampedModel, Base):
 
 class Ride(TimestampedModel, Base):
     __tablename__ = 'rides'
-    __table_args__ = (CheckConstraint("status IN ('requested', 'searching', 'driver_assigned', 'driver_arriving', 'driver_arrived', 'in_progress', 'completed', 'cancelled')", name='ck_rides_status'), Index('ix_rides_passenger_requested', 'passenger_id', 'requested_at'), Index('ix_rides_driver_status_requested', 'driver_id', 'status', 'requested_at'))
+    __table_args__ = (
+        CheckConstraint("status IN ('requested', 'searching', 'driver_assigned', 'driver_arriving', 'driver_arrived', 'in_progress', 'completed', 'cancelled')", name='ck_rides_status'),
+        Index('ix_rides_passenger_requested', 'passenger_id', 'requested_at'),
+        Index('ix_rides_driver_status_requested', 'driver_id', 'status', 'requested_at'),
+        Index('uq_rides_one_active_passenger', 'passenger_id', unique=True, postgresql_where=text(f'status IN ({ACTIVE_RIDE_STATUSES})'), sqlite_where=text(f'status IN ({ACTIVE_RIDE_STATUSES})')),
+        Index('uq_rides_one_active_driver', 'driver_id', unique=True, postgresql_where=text(f'driver_id IS NOT NULL AND status IN ({ACTIVE_RIDE_STATUSES})'), sqlite_where=text(f'driver_id IS NOT NULL AND status IN ({ACTIVE_RIDE_STATUSES})')),
+    )
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     passenger_id: Mapped[int] = mapped_column(ForeignKey('passengers.id', ondelete='RESTRICT'), nullable=False)
     driver_id: Mapped[int | None] = mapped_column(ForeignKey('drivers.id', ondelete='RESTRICT'))
@@ -174,7 +182,7 @@ class Ride(TimestampedModel, Base):
     destination_place_id: Mapped[str | None] = mapped_column(String(255))
     destination_latitude: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
     destination_longitude: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
-    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
     accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     arrived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -215,7 +223,7 @@ class RideEvent(Base):
     actor_id: Mapped[int | None] = mapped_column(Integer)
     event_type: Mapped[str] = mapped_column(String(64), nullable=False)
     payload: Mapped[dict | None] = mapped_column(JSON)
-    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
 
 
 class RideDispatchOffer(Base):
@@ -228,7 +236,7 @@ class RideDispatchOffer(Base):
     ride_id: Mapped[int] = mapped_column(ForeignKey('rides.id', ondelete='CASCADE'), nullable=False)
     driver_id: Mapped[int] = mapped_column(ForeignKey('drivers.id', ondelete='CASCADE'), nullable=False)
     status: Mapped[str] = mapped_column(String(20), default='pending', nullable=False)
-    offered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    offered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
@@ -297,7 +305,7 @@ class DeviceSession(TimestampedModel, Base):
     platform: Mapped[str | None] = mapped_column(String(32))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
 
 
 class DriverCurrentLocation(Base):
@@ -308,7 +316,7 @@ class DriverCurrentLocation(Base):
     heading_degrees: Mapped[int | None] = mapped_column(Integer)
     accuracy_meters: Mapped[Decimal | None] = mapped_column(Numeric(7, 2))
     speed_mps: Mapped[Decimal | None] = mapped_column(Numeric(7, 2))
-    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False, index=True)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False, index=True)
 
 
 class Notification(TimestampedModel, Base):
@@ -382,7 +390,7 @@ class AuditLog(Base):
     entity_type: Mapped[str] = mapped_column(String(64), nullable=False)
     entity_id: Mapped[str] = mapped_column(String(64), nullable=False)
     metadata_json: Mapped[dict | None] = mapped_column(JSON)
-    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
 
 
 class OutboxEvent(Base):
@@ -393,5 +401,5 @@ class OutboxEvent(Base):
     aggregate_id: Mapped[str] = mapped_column(String(64), nullable=False)
     event_type: Mapped[str] = mapped_column(String(96), nullable=False)
     payload: Mapped[dict] = mapped_column(JSON, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
