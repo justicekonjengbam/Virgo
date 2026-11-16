@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     admin_bootstrap_name: str = 'Virgo Operations Admin'
     admin_bootstrap_role: str = 'super_admin'
     geoapify_api_key: str | None = None
+    geoapify_map_style: str = 'osm-bright'
     maps_contact_email: str = 'support@virgocabs.com'
 
     # Development-only test simulation for physical testing outside service area

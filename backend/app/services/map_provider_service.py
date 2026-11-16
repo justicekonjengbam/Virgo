@@ -76,8 +76,9 @@ class MapProviderService:
     def config(self, base_url: str | None = None) -> MapConfigResponse:
         key = get_settings().geoapify_api_key
         if key:
+            style = get_settings().geoapify_map_style or 'osm-bright'
             return MapConfigResponse(
-                style_url=f'https://maps.geoapify.com/v1/styles/klokantech-basic/style.json?apiKey={quote(key)}',
+                style_url=f'https://maps.geoapify.com/v1/styles/{style}/style.json?apiKey={quote(key)}',
                 attribution='© OpenStreetMap contributors · Geoapify',
                 service_area=self.bounds,
                 service_center=[self.center_longitude, self.center_latitude],

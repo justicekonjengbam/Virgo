@@ -37,7 +37,7 @@ export function BookingStatusScreen({ ride, onDone, onMenuPress }: Props) {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content}>
         <AppPageHeader onBack={finished ? onDone : askToEnd} onMenuPress={onMenuPress} title="Your ride" />
-        <VirgoMap destination={destination} driver={driver} pickup={pickup} route={status?.route_geojson} showUserLocation />
+        <VirgoMap destination={destination} driver={driver} height={380} pickup={pickup} route={status?.route_geojson} showUserLocation />
         <View style={styles.connection}>
           <View style={[styles.dot, { backgroundColor: liveConnected ? colors.success : colors.warning }]} />
           <DsText color={colors.textSecondary} variant="caption">
