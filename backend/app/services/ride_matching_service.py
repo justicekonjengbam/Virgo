@@ -36,6 +36,7 @@ from app.services.realtime_events import (
     publish_passenger_status,
 )
 from app.services.ride_lifecycle_service import RideLifecycleService
+from app.services.spatial_grid import DispatchCandidate, HexSpatialGrid, UberStyleDispatchSelector
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,7 @@ class RideMatchingService:
     }
     readiness_service = DriverReadinessService()
     document_service = DocumentManagementService()
+    spatial_selector = UberStyleDispatchSelector()
 
     def dispatch(self, db: Session, ride: Ride) -> RideDispatchOffer | None:
         if ride.status != 'searching':
@@ -101,6 +103,38 @@ class RideMatchingService:
             )
             return None
 
+        # Check if the search ring expanded since previous offer
+        last_offer_event = db.scalar(
+            select(RideEvent)
+            .where(
+                RideEvent.ride_id == ride.id,
+                RideEvent.event_type == 'ride_offered',
+            )
+            .order_by(RideEvent.occurred_at.desc())
+            .limit(1)
+        )
+        prev_tier = (
+            last_offer_event.payload.get('ring_tier')
+            if (last_offer_event and last_offer_event.payload)
+            else None
+        )
+        current_tier = getattr(candidate, 'tier', None)
+        if prev_tier is not None and current_tier is not None and current_tier > prev_tier:
+            db.add(
+                RideEvent(
+                    ride_id=ride.id,
+                    actor_type='system',
+                    actor_id=None,
+                    event_type='ride_search_ring_expanded',
+                    payload={
+                        'from_tier': prev_tier,
+                        'to_tier': current_tier,
+                        'tier_name': getattr(candidate, 'tier_name', 'Unknown'),
+                        'distance_km': round(candidate[1], 2),
+                    },
+                )
+            )
+
         offer = RideDispatchOffer(
             ride_id=ride.id,
             driver_id=candidate[0].id,
@@ -113,7 +147,14 @@ class RideMatchingService:
                 actor_type='system',
                 actor_id=None,
                 event_type='ride_offered',
-                payload={'driver_id': candidate[0].id, 'pickup_distance_km': candidate[1]},
+                payload={
+                    'driver_id': candidate[0].id,
+                    'pickup_distance_km': round(candidate[1], 2),
+                    'cell_id': getattr(candidate, 'cell_id', None),
+                    'ring_tier': getattr(candidate, 'tier', None),
+                    'hex_distance': getattr(candidate, 'hex_distance', None),
+                    'dispatch_score': getattr(candidate, 'score', None),
+                },
             )
         )
         return offer
@@ -258,7 +299,25 @@ class RideMatchingService:
         elif ride.status == 'cancelled' and ride.cancellation_reason == 'no_eligible_driver':
             message = f'No nearby verified Driver is available right now. Please try again shortly or Call & Book at {self.support_phone}.'
         elif ride.status == 'searching':
-            message = 'Finding a nearby Driver for you.'
+            latest_search_event = db.scalar(
+                select(RideEvent)
+                .where(
+                    RideEvent.ride_id == ride.id,
+                    RideEvent.event_type.in_(('ride_offered', 'ride_search_ring_expanded')),
+                )
+                .order_by(RideEvent.occurred_at.desc())
+                .limit(1)
+            )
+            tier_msg = None
+            if latest_search_event and latest_search_event.payload:
+                tier_idx = (
+                    latest_search_event.payload.get('ring_tier')
+                    if latest_search_event.payload.get('ring_tier') is not None
+                    else latest_search_event.payload.get('to_tier')
+                )
+                if tier_idx is not None and 0 <= tier_idx < len(self.spatial_selector.tiers):
+                    tier_msg = self.spatial_selector.tiers[tier_idx].search_message
+            message = tier_msg or 'Finding a nearby Driver for you.'
         else:
             message = 'Your ride status has been updated.'
         location = db.get(DriverCurrentLocation, ride.driver_id) if ride.driver_id else None
@@ -427,7 +486,7 @@ class RideMatchingService:
             return self.dispatch(db, ride)
         return None
 
-    def _nearest_candidate(self, db: Session, ride: Ride, excluded_driver_ids: set[int]) -> tuple[Driver, float] | None:
+    def _nearest_candidate(self, db: Session, ride: Ride, excluded_driver_ids: set[int]) -> DispatchCandidate | tuple[Driver, float] | None:
         category = db.get(RideCategory, ride.category_id)
         if not category:
             return None
@@ -465,7 +524,7 @@ class RideMatchingService:
             )
         ).all()
 
-        candidates: list[tuple[Driver, float]] = []
+        candidate_data: list[dict[str, Any]] = []
         now = datetime.now(UTC)
 
         for driver, location, vehicle in rows:
@@ -520,13 +579,33 @@ class RideMatchingService:
             if not coordinates:
                 continue
 
-            distance = self._distance_km(
-                coordinates[0], coordinates[1], float(ride.pickup_latitude), float(ride.pickup_longitude)
-            )
-            if distance <= self.maximum_pickup_distance_km:
-                candidates.append((driver, distance))
+            idle_minutes = 15.0
+            if driver.last_online_at:
+                online_at = (
+                    driver.last_online_at.replace(tzinfo=UTC)
+                    if driver.last_online_at.tzinfo is None
+                    else driver.last_online_at
+                )
+                idle_minutes = max(0.0, (now - online_at).total_seconds() / 60.0)
 
-        return min(candidates, key=lambda item: item[1]) if candidates else None
+            candidate_data.append({
+                'driver': driver,
+                'latitude': coordinates[0],
+                'longitude': coordinates[1],
+                'heading_degrees': location.heading_degrees if location else None,
+                'idle_minutes': idle_minutes,
+                'rating': float(driver.rating_average) if driver.rating_average else 5.0,
+            })
+
+        if not candidate_data:
+            return None
+
+        return self.spatial_selector.select_best_candidate(
+            pickup_lat=float(ride.pickup_latitude),
+            pickup_lon=float(ride.pickup_longitude),
+            candidates=candidate_data,
+            excluded_driver_ids=excluded_driver_ids,
+        )
 
     def _driver_coordinates(self, driver: Driver, location: DriverCurrentLocation | None) -> tuple[float, float] | None:
         settings = get_settings()
