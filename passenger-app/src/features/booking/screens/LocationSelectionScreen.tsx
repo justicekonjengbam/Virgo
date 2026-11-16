@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, SafeAreaView, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Pressable, SafeAreaView, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { LocationManager } from '@maplibre/maplibre-react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -21,6 +21,20 @@ export function LocationSelectionScreen({ title, onBack, onMenuPress, onSelected
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(scope === 'outstation' ? 'Search landmarks, cities, districts, or place a pin anywhere in India.' : 'Search or pin any location within 150 km of Imphal.');
   const skipNextSearch = useRef(false);
+
+  useEffect(() => {
+    const onHardwareBack = () => {
+      onBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onHardwareBack);
+    return () => {
+      sub.remove();
+      try {
+        LocationManager.stop();
+      } catch {}
+    };
+  }, [onBack]);
 
   useEffect(() => {
     if (scope === 'local') {

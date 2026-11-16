@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Camera, CameraRef, GeoJSONSource, Layer, Map, Marker, UserLocation } from '@maplibre/maplibre-react-native';
+import { Camera, CameraRef, GeoJSONSource, Layer, LocationManager, Map, Marker, UserLocation } from '@maplibre/maplibre-react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { DriverText } from '../../../components/DriverText';
@@ -50,6 +50,16 @@ export function DriverRideMap({ pickup, destination, driver, route, height = 400
   const [failed, setFailed] = useState(false);
   const [is3D, setIs3D] = useState(false);
   const [zoomLevel, setZoomLevel] = useState<number>(15.5);
+  const [isMounted, setIsMounted] = useState(true);
+
+  useEffect(() => {
+    return () => {
+      setIsMounted(false);
+      try {
+        LocationManager.stop();
+      } catch {}
+    };
+  }, []);
 
   useEffect(() => {
     void getMapConfiguration()
@@ -136,7 +146,7 @@ export function DriverRideMap({ pickup, destination, driver, route, height = 400
           }}
           ref={cameraRef}
         />
-        <UserLocation accuracy animated heading />
+        {isMounted ? <UserLocation animated={false} /> : null}
 
         {isVector ? (
           <Layer

@@ -78,25 +78,30 @@ function RideRequestRoute({ navigation }: NativeStackScreenProps<DriverStackPara
   return <RideRequestScreen onAccepted={() => navigation.replace('ActiveRide')} onBack={() => navigation.goBack()} />;
 }
 
-function ActiveRideRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'ActiveRide'>) { return <DriverActiveRideScreen onBack={() => navigation.goBack()} onFinished={() => navigation.reset({ index: 0, routes: [{ name: 'Home' }] })}/>; }
+function safeBack(navigation: any) {
+  if (navigation.canGoBack()) navigation.goBack();
+  else navigation.navigate('Home');
+}
+
+function ActiveRideRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'ActiveRide'>) { return <DriverActiveRideScreen onBack={() => safeBack(navigation)} onFinished={() => navigation.reset({ index: 0, routes: [{ name: 'Home' }] })}/>; }
 
 function EarningsRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Earnings'>) {
-  return <DriverEarningsScreen onBack={() => navigation.goBack()} />;
+  return <DriverEarningsScreen onBack={() => safeBack(navigation)} />;
 }
 
 function TripHistoryRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'TripHistory'>) {
-  return <DriverTripHistoryScreen onBack={() => navigation.goBack()} />;
+  return <DriverTripHistoryScreen onBack={() => safeBack(navigation)} />;
 }
 
-function OutstationRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Outstation'>) { return <DriverOutstationScreen onBack={() => navigation.goBack()}/>; }
+function OutstationRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Outstation'>) { return <DriverOutstationScreen onBack={() => safeBack(navigation)}/>; }
 
 function SettingsRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Settings'>) {
   const { switchToPassenger } = useAppMode();
-  return <DriverSettingsScreen onBack={() => navigation.goBack()} onSwitchToPassenger={switchToPassenger} />;
+  return <DriverSettingsScreen onBack={() => safeBack(navigation)} onSwitchToPassenger={switchToPassenger} />;
 }
 
 function DocumentsRoute({ navigation }: NativeStackScreenProps<DriverStackParamList, 'Documents'>) {
-  return <DriverDocumentsScreen onBack={() => navigation.goBack()} />;
+  return <DriverDocumentsScreen onBack={() => safeBack(navigation)} />;
 }
 
 export function DriverNavigator() {

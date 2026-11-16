@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Camera, CameraRef, GeoJSONSource, Layer, Map, Marker, UserLocation } from '@maplibre/maplibre-react-native';
+import { Camera, CameraRef, GeoJSONSource, Layer, LocationManager, Map, Marker, UserLocation } from '@maplibre/maplibre-react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { DsText } from '../../../components/design-system';
@@ -63,6 +63,16 @@ export function VirgoMap({
   const [is3D, setIs3D] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [zoomLevel, setZoomLevel] = useState<number>(pickup ? 16 : 14.5);
+  const [isMounted, setIsMounted] = useState(true);
+
+  useEffect(() => {
+    return () => {
+      setIsMounted(false);
+      try {
+        LocationManager.stop();
+      } catch {}
+    };
+  }, []);
 
   useEffect(() => {
     void mapService
@@ -177,7 +187,7 @@ export function VirgoMap({
         touchRotate
       >
         <Camera initialViewState={initialViewState} ref={cameraRef} />
-        {showUserLocation ? <UserLocation accuracy animated heading /> : null}
+        {showUserLocation && isMounted ? <UserLocation animated={false} /> : null}
 
         {isVector ? (
           <Layer
