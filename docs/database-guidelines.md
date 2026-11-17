@@ -1,12 +1,14 @@
-# CabApp database guide
+# Virgo database guide
 
 ## Local development
 
-The API uses SQLite by default so the emulator can run without external downloads. The schema is applied through Alembic migrations when `AUTO_MIGRATE=true`.
+The API uses PostgreSQL through psycopg 3. Configure `DATABASE_URL` in `backend/.env` with your Supabase PostgreSQL connection string. `backend/.env.example` shows the required format. Use the direct database host from the correct Virgo Supabase project and URL-encode reserved characters in the password. The backend uses PostgreSQL only; SQLite is not a supported application database.
+
+The schema is managed by Alembic. In development, `AUTO_MIGRATE=true` applies the existing migration chain at startup. For production, use `AUTO_MIGRATE=false` and apply migrations as a deployment step.
 
 ## Production
 
-Use PostgreSQL with PostGIS, set `AUTO_MIGRATE=false`, and run `alembic upgrade head` from the deployment release process using a dedicated migration user. Use Redis for live driver presence, dispatch candidates, rate limits, and ephemeral location updates; keep durable ride records in PostgreSQL.
+Use PostgreSQL, set `AUTO_MIGRATE=false`, and run `alembic upgrade head` from the deployment release process using an appropriately scoped migration user. Use Redis for live driver presence, dispatch candidates, rate limits, and ephemeral location updates; keep durable ride records in PostgreSQL.
 
 ## Data rules
 

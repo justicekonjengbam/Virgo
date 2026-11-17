@@ -142,7 +142,7 @@ class RateCard(TimestampedModel, Base):
     __tablename__ = 'rate_cards'
     __table_args__ = (Index('ix_rate_cards_category_version', 'category_code', 'version'),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_code: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    category_code: Mapped[str] = mapped_column(String(32), nullable=False)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     base_fare_paise: Mapped[int] = mapped_column(Integer, nullable=False)
